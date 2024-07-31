@@ -106,6 +106,10 @@ setup_calico() {
     kubectl get nodes
 }
 
+install_helm() {
+    curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+}
+
 setup_hosts
 disable_swap
 setup_firewall
@@ -113,3 +117,4 @@ install_containerd
 install_kubernetes
 init_k8s_master
 setup_calico
+install_helm
