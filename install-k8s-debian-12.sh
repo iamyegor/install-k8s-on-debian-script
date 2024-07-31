@@ -110,6 +110,11 @@ install_helm() {
     curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
 }
 
+initial_k8s_setup() {
+    kubectl taint nodes $MASTER_HOSTNAME node-role.kubernetes.io/control-plane:NoSchedule-
+    kubectl label nodes $MASTER_HOSTNAME ingress-ready=true
+}
+
 setup_hosts
 disable_swap
 setup_firewall
@@ -118,3 +123,4 @@ install_kubernetes
 init_k8s_master
 setup_calico
 install_helm
+initial_k8s_setup
