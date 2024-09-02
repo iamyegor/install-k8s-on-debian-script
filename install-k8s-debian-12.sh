@@ -59,6 +59,7 @@ EOF
 
 install_kubernetes() {
     sudo apt update
+    sudo apt install gnupg
     sudo apt install -y apt-transport-https ca-certificates curl
     sudo mkdir -p /etc/apt/keyrings
     curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.30/deb/Release.key | sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg

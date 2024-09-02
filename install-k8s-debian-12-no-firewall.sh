@@ -1,7 +1,7 @@
 #!/bin/bash
 
 MASTER_HOSTNAME="k8s-master"
-MASTER_IP="95.174.93.15"
+MASTER_IP="84.201.150.249"
 
 setup_hosts() {
     sudo hostnamectl set-hostname $MASTER_HOSTNAME
@@ -39,6 +39,7 @@ EOF
 
 install_kubernetes() {
     sudo apt update
+    sudo apt install gnupg
     sudo apt install -y apt-transport-https ca-certificates curl
     sudo mkdir -p /etc/apt/keyrings
     curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.30/deb/Release.key | sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
