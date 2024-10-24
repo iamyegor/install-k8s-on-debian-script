@@ -1,11 +1,13 @@
 #!/bin/bash
 
 MASTER_HOSTNAME="k8s-master"
-MASTER_IP="95.174.93.15"
+MASTER_IP="FILL_ME_IN"
 
 setup_hosts() {
     sudo hostnamectl set-hostname $MASTER_HOSTNAME
-    echo "$MASTER_IP   $MASTER_HOSTNAME" | sudo tee -a /etc/hosts
+    local new_entry="$MASTER_IP   $MASTER_HOSTNAME"
+    echo "$new_entry" | cat - /etc/hosts > /tmp/hosts.new
+    sudo mv /tmp/hosts.new /etc/hosts
 }
 
 disable_swap() {
