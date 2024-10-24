@@ -1,7 +1,32 @@
 #!/bin/bash
 
 MASTER_HOSTNAME="k8s-master"
-MASTER_IP="FILL_ME_IN"
+
+get_master_ip() {
+    while true; do
+        read -p "Please enter the public IP address of the master server: " MASTER_IP
+        
+        # Basic IP address format validation
+        if [[ $MASTER_IP =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then
+            # Validate each octet is between 0-255
+            valid=true
+            IFS='.' read -ra ADDR <<< "$MASTER_IP"
+            for i in "${ADDR[@]}"; do
+                if [ $i -lt 0 ] || [ $i -gt 255 ]; then
+                    valid=false
+                    break
+                fi
+            done
+            
+            if [ "$valid" = true ]; then
+                export MASTER_IP
+                break
+            fi
+        fi
+        
+        echo "Invalid IP address format. Please try again."
+    done
+}
 
 setup_hosts() {
     sudo hostnamectl set-hostname $MASTER_HOSTNAME
@@ -92,6 +117,7 @@ initial_k8s_setup() {
     kubectl label nodes $MASTER_HOSTNAME ingress-ready=true
 }
 
+get_master_ip
 setup_hosts
 disable_swap
 install_containerd
