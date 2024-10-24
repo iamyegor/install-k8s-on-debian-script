@@ -126,7 +126,7 @@ wait_for_master_ready() {
             echo "Waiting for master node to be available..."
             sleep 10
             continue
-        }
+        fi
 
         NODE_STATUS=$(kubectl get $MASTER_NODE -o jsonpath='{.status.conditions[?(@.type=="Ready")].status}')
         if [ "$NODE_STATUS" = "True" ]; then
@@ -184,7 +184,7 @@ install_ingress_controller() {
         echo "Failed to install Helm chart"
         rm -rf "$temp_dir"
         return 1
-    }
+    fi
     
     echo "Cleaning up..."
     rm -rf "$temp_dir"
