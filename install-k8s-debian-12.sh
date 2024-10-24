@@ -143,13 +143,91 @@ initial_k8s_setup() {
     kubectl label nodes $MASTER_HOSTNAME ingress-ready=true
 }
 
+wait_for_master_ready() {
+    echo "Waiting for master node to be ready..."
+    
+    while true; do
+        MASTER_NODE=$(kubectl get nodes --selector='node-role.kubernetes.io/control-plane' -o name | head -n1)
+        if [ -z "$MASTER_NODE" ]; then
+            echo "Waiting for master node to be available..."
+            sleep 10
+            continue
+        }
+
+        NODE_STATUS=$(kubectl get $MASTER_NODE -o jsonpath='{.status.conditions[?(@.type=="Ready")].status}')
+        if [ "$NODE_STATUS" = "True" ]; then
+            echo "Master node is ready"
+            return 0
+        else
+            echo "Master node not ready yet, waiting..."
+            sleep 10
+        fi
+    done
+}
+
+install_cert_manager() {
+    
+    echo "Installing cert-manager..."
+    
+    helm repo add jetstack https://charts.jetstack.io --force-update
+    
+    helm install \
+        cert-manager jetstack/cert-manager \
+        --namespace cert-manager \
+        --create-namespace \
+        --version v1.16.1 \
+        --set crds.enabled=true
+    
+    echo "Waiting for cert-manager pods to be ready..."
+    kubectl wait --for=condition=Ready pods -l app.kubernetes.io/instance=cert-manager -n cert-manager --timeout=300s
+    
+    if [ $? -eq 0 ]; then
+        echo "cert-manager installation completed successfully"
+    else
+        echo "Error: cert-manager pods did not become ready in time"
+        return 1
+    fi
+}
+
+install_ingress_controller() {
+    local repo_url="https://github.com/iamyegor/nginx-ingress-controller.git"
+    local temp_dir="/tmp/nginx-ingress-temp"
+    local chart_name="ingress-controller-chart-1.0.0.tgz"
+    local release_name="ingress-controller"
+    
+    echo "Creating temporary directory..."
+    rm -rf "$temp_dir"
+    mkdir -p "$temp_dir"
+    
+    echo "Cloning repository..."
+    if ! git clone "$repo_url" "$temp_dir"; then
+        echo "Failed to clone repository"
+        return 1
+    fi
+    
+    echo "Installing Helm chart..."
+    if ! helm install "$release_name" "$temp_dir/$chart_name"; then
+        echo "Failed to install Helm chart"
+        rm -rf "$temp_dir"
+        return 1
+    }
+    
+    echo "Cleaning up..."
+    rm -rf "$temp_dir"
+    
+    echo "Installation complete!"
+    return 0
+}
+
 get_master_ip
 setup_hosts
 disable_swap
-setup_firewall
 install_containerd
 install_kubernetes
 init_k8s_master
 setup_calico
 install_helm
 initial_k8s_setup
+wait_for_master_ready
+install_cert_manager
+install_ingress_controller
