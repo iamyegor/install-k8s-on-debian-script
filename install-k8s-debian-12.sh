@@ -219,6 +219,17 @@ install_ingress_controller() {
     return 0
 }
 
+add_dns_conf() {
+    cat > /etc/resolv.conf << EOF
+    nameserver 8.8.8.8
+    nameserver 8.8.4.4
+    nameserver 2a03:6f00:1:2::5c35:7468
+    nameserver 2a03:6f00:1:2::5c35:740d
+EOF
+
+    echo "Dns configuration added"
+}
+
 get_master_ip
 setup_hosts
 disable_swap
@@ -231,3 +242,4 @@ initial_k8s_setup
 wait_for_master_ready
 install_cert_manager
 install_ingress_controller
+add_dns_conf
