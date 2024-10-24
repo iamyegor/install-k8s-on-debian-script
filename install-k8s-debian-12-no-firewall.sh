@@ -23,16 +23,16 @@ get_master_ip() {
                 break
             fi
         fi
-        
+
         echo "Invalid IP address format. Please try again."
     done
 }
 
 setup_hosts() {
-    sudo hostnamectl set-hostname $MASTER_HOSTNAME
     local new_entry="$MASTER_IP   $MASTER_HOSTNAME"
     echo "$new_entry" | cat - /etc/hosts > /tmp/hosts.new
     sudo mv /tmp/hosts.new /etc/hosts
+    sudo hostnamectl set-hostname $MASTER_HOSTNAME
 }
 
 disable_swap() {
